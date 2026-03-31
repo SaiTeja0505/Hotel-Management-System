@@ -48,6 +48,7 @@ id (PK)
 name (ADMIN / HOTEL_OWNER / USER)
 created_at
 
+
 Users Table
 Users
 ------
@@ -194,3 +195,386 @@ status
 changed_by (FK → Users.id)
 created_at
 
+
+
+
+
+USER PAGES
+Home Page
+/home
+Features:
+
+Search hotels
+
+Filter:
+
+City
+
+Price
+
+Guests
+
+Dates
+
+2 Hotel Details Page
+/hotels/{id}
+Shows:
+
+Hotel images
+
+Description
+
+Amenities
+
+Available rooms
+
+Prices
+
+Button:
+
+Book Room
+3 Booking Page
+/booking/{roomId}
+Fields:
+
+Check‑in date
+Check‑out date
+Guests
+Total price calculation
+Button:
+
+Confirm Booking
+4 Booking History
+/my-bookings
+Shows:
+
+Booking ID
+Hotel
+Room
+Dates
+Status
+Cancel button
+
+
+
+
+
+
+HOTEL OWNER PAGES
+Owner Dashboard
+/owner/dashboard
+Shows:
+
+Total hotels
+Total rooms
+Active bookings
+Pending bookings
+Manage Hotels
+/owner/hotels
+Functions:
+
+Add hotel
+Edit hotel
+Delete hotel
+Upload images
+Manage Rooms
+/owner/rooms
+Functions:
+
+Add room
+Update room
+Delete room
+Add amenities
+Upload images
+Booking Management
+/owner/bookings
+Shows:
+
+User name
+Room
+Dates
+Status
+Buttons:
+
+Accept
+Reject
+
+
+
+
+
+
+ADMIN PAGES
+Admin Dashboard
+/admin/dashboard
+Shows:
+
+Total users
+Total owners
+Total hotels
+Total bookings
+Manage Users
+/admin/users
+Actions:
+
+View users
+Block user
+Delete user
+Manage Owners
+/admin/owners
+Shows:
+
+Pending approvals
+Approve owner
+Reject owner
+Manage Hotels
+/admin/hotels
+Actions:
+
+Approve hotel
+Reject hotel
+View Bookings
+/admin/bookings
+Read‑only monitoring.
+
+BACKEND STRUCTURE (Spring Boot)
+Auth APIs
+POST /auth/register/user
+POST /auth/register/owner
+POST /auth/login
+GET /auth/profile
+Admin APIs
+Users:
+
+GET /admin/users
+PUT /admin/users/{id}/block
+DELETE /admin/users/{id}
+Owners:
+
+GET /admin/owners/pending
+PUT /admin/owners/{id}/approve
+PUT /admin/owners/{id}/reject
+Hotels:
+
+GET /admin/hotels
+PUT /admin/hotels/{id}/approve
+PUT /admin/hotels/{id}/reject
+Bookings:
+
+GET /admin/bookings
+Hotel Owner APIs
+Hotels:
+
+POST /owner/hotels
+PUT /owner/hotels/{id}
+DELETE /owner/hotels/{id}
+GET /owner/hotels
+Rooms:
+
+POST /owner/rooms
+PUT /owner/rooms/{id}
+DELETE /owner/rooms/{id}
+GET /owner/rooms/{hotelId}
+Amenities:
+
+POST /owner/rooms/{id}/amenities
+DELETE /owner/rooms/{id}/amenities/{amenityId}
+Bookings:
+
+GET /owner/bookings
+PUT /owner/bookings/{id}/accept
+PUT /owner/bookings/{id}/reject
+User APIs
+Hotels:
+
+GET /hotels
+GET /hotels/{id}
+Rooms:
+
+GET /rooms/{hotelId}
+Bookings:
+
+POST /bookings
+GET /bookings/my
+PUT /bookings/{id}/cancel
+
+
+
+
+Database Relations (FINAL)
+Core Relations
+Roles → Users
+Roles.id → Users.role_id
+Users → Hotels
+Users.id → Hotels.owner_id
+
+1 Owner → Many Hotels
+Hotels → Rooms
+Hotels.id → Rooms.hotel_id
+
+1 Hotel → Many Rooms
+Rooms → RoomAmenities
+Rooms.id → RoomAmenities.room_id
+Amenities → RoomAmenities
+Amenities.id → RoomAmenities.amenity_id
+Creates:
+
+Rooms ↔ Amenities (Many to Many)
+Users → Bookings
+Users.id → Bookings.user_id
+
+1 User → Many Bookings
+Rooms → Bookings
+Rooms.id → Bookings.room_id
+
+1 Room → Many Bookings
+Bookings → BookingHistory
+Bookings.id → BookingStatusHistory.booking_id
+Owner Approval
+Users.id → OwnerApprovals.owner_id
+Users.id → OwnerApprovals.approved_by
+Final Relationship Flow
+Roles
+ ↓
+Users
+ ↓
+Hotels
+ ↓
+Rooms
+ ↓
+RoomAmenities ← Amenities
+ ↓
+Bookings
+ ↓
+BookingStatusHistory
+
+
+
+
+
+
+JWT Flow
+Login → JWT token generated
+Frontend stores token
+Token sent in headers:
+
+Authorization: Bearer <token>
+
+
+
+Project Folder Structure (Judges sometimes ask)
+Add:
+
+
+Backend Structure
+controller/
+AuthController
+AdminController
+OwnerController
+BookingController
+
+service/
+AuthService
+HotelService
+RoomService
+BookingService
+
+repository/
+UserRepository
+HotelRepository
+RoomRepository
+BookingRepository
+
+entity/
+User
+Hotel
+Room
+Booking
+
+dto/
+LoginDTO
+RegisterDTO
+BookingDTO
+
+security/
+JWTUtil
+JWTFilter
+SecurityConfig
+
+exception/
+GlobalExceptionHandler
+
+
+
+Frontend Structure
+
+pages/
+Login.jsx
+Register.jsx
+Home.jsx
+HotelDetails.jsx
+Booking.jsx
+MyBookings.jsx
+
+owner/
+OwnerDashboard.jsx
+ManageHotels.jsx
+ManageRooms.jsx
+OwnerBookings.jsx
+
+admin/
+AdminDashboard.jsx
+ManageUsers.jsx
+ManageOwners.jsx
+
+components/
+Navbar.jsx
+ProtectedRoute.jsx
+HotelCard.jsx
+RoomCard.jsx
+
+services/
+api.js
+authService.js
+bookingService.js
+
+
+Booking Validation Logic
+check_out_date > check_in_date
+
+No overlapping bookings:
+WHERE room_id = ?
+AND status='CONFIRMED'
+AND check_in < new_checkout
+AND check_out > new_checkin
+
+
+Error Handling Strategy
+BackendGlobalExceptionHandler
+
+404 Resource not found
+400 Validation error
+401 Unauthorized
+403 Forbidden
+500 Server error
+
+Demo Data Plan
+seed Data
+1 Admin
+2 Owners
+3 Hotels
+6 Rooms
+3 Users
+4 Bookings
+Amenities list
+
+
+Integration Rules
+API response format:
+Example:
+
+{
+  "success": true,
+  "data": {},
+  "message": "Hotel fetched"
+}
