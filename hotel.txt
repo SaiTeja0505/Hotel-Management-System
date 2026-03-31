@@ -1,0 +1,196 @@
+Admin
+
+Manage users
+Manage hotel owners
+Approve hotels
+View bookings
+System monitoring
+
+hotel owner
+
+Add/Update/Delete rooms
+Manage amenities
+View bookings
+Accept/Reject bookings
+Update availability
+Manage hotel details
+
+
+user
+
+Search hotels
+Filter rooms
+View details
+Book rooms
+Cancel booking
+Booking history
+Profile management
+
+
+
+
+User registers , gets USER role
+
+Hotel owner registers , gets PENDING role
+if Admin approves then becomes HOTEL_OWNER
+
+Admin created manually
+
+
+
+
+Database Design
+
+Roles Table (RBAC Design)
+Roles
+------
+id (PK)
+name (ADMIN / HOTEL_OWNER / USER)
+created_at
+
+Users Table
+Users
+------
+id (PK)
+name
+email (UNIQUE)
+password_hash
+phone
+role_id (FK → Roles.id)
+status (ACTIVE / PENDING / BLOCKED)
+last_login
+created_at
+updated_at
+
+
+Owner Approval Table
+
+Tracks approval workflow.
+
+OwnerApprovals
+--------------
+id (PK)
+owner_id (FK → Users.id)
+approved_by (FK → Users.id)
+status (APPROVED / REJECTED / PENDING)
+remarks
+created_at
+
+
+Hotels Table
+
+Hotels
+------
+id (PK)
+owner_id (FK → Users.id)
+name
+description
+location
+address
+city
+state
+country
+rating (default 0)
+status (PENDING / APPROVED / REJECTED)
+created_at
+updated_at
+
+Relationship:
+
+User (Hotel Owner) → Hotels (1:N)
+
+Hotel Images
+HotelImages
+-----------
+id (PK)
+hotel_id (FK → Hotels.id)
+image_url
+created_at
+
+Rooms Table
+Rooms
+------
+id (PK)
+hotel_id (FK → Hotels.id)
+room_number
+room_type
+price_per_night
+capacity
+max_guests
+description
+total_rooms
+created_at
+updated_at
+
+Relationship:
+
+Hotel → Rooms (1:N)
+Room Images
+RoomImages
+----------
+id (PK)
+room_id (FK → Rooms.id)
+image_url
+created_at
+
+Amenities Master Table
+Amenities
+---------
+id (PK)
+name
+description
+created_at
+
+Example records:
+
+WiFi
+AC
+Parking
+Swimming Pool
+Breakfast
+
+
+Room Amenities Mapping (Many-to-Many)
+RoomAmenities
+-------------
+id (PK)
+room_id (FK → Rooms.id)
+amenity_id (FK → Amenities.id)
+
+Relationship:
+
+Rooms → RoomAmenities ← Amenities
+
+Bookings Table (Main Transaction Table)
+Bookings
+--------
+id (PK)
+booking_reference (UNIQUE)
+user_id (FK → Users.id)
+room_id (FK → Rooms.id)
+
+check_in_date
+check_out_date
+
+total_price
+
+status
+(PENDING / CONFIRMED / CANCELLED / REJECTED)
+created_at
+updated_at
+
+Relationship:
+
+User → Bookings (1:N)
+Room → Bookings (1:N)
+
+
+Booking Status History 
+BookingStatusHistory
+--------------------
+id (PK)
+booking_id (FK → Bookings.id)
+status
+changed_by (FK → Users.id)
+created_at
+
